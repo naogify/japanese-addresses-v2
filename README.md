@@ -1,5 +1,8 @@
 # Geolonia 住所データツール v2
 
+> **naogify の作業用 fork です。** 上流で実測した問題の記録（issues）と修正の試作を置いています。
+> 最終的に本家（geolonia）へフィードバックするための下書きで、本家の公式な配布物ではありません。
+
 [![NPM Version](https://img.shields.io/npm/v/%40geolonia%2Fjapanese-addresses-v2)](https://www.npmjs.com/package/@geolonia/japanese-addresses-v2)
 
 全国の住所データを HTTP API として公開するためのツールを公開いたします。
