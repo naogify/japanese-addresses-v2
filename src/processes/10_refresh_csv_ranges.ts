@@ -4,7 +4,7 @@ import path from 'node:path';
 import { parse as csvParse } from 'csv-parse';
 import cliProgress from 'cli-progress';
 
-import { cityName, MachiAzaApi, machiAzaName, PrefectureApi, prefectureName, SingleCity, SinglePrefecture } from '../data.js';
+import { cityName, MachiAzaApi, machiAzaName, PrefectureApi, prefectureName, SingleCity, SinglePrefecture, SingleMachiAza } from '../data.js';
 import { HeaderRow } from '../address_data.js';
 
 function readUntilHeaderEnd(path: string): Promise<Buffer> {
@@ -58,6 +58,22 @@ export async function getRangesFromCSV(path: string): Promise<undefined | Header
       return undefined;
     }
     throw e;
+  }
+}
+
+/**
+ * 住居表示のデータを持つ町字の rsdt フラグを true にする。
+ *
+ * 02 で付く rsdt は ABR 町字マスターの rsdt_addr_flg そのままだが、ABR 上は「住居表示非実施」(flg=0) でも
+ * 住居表示-住居マスターに行が存在する町字がある。そうした町字を rsdt なし(=地番扱い)にすると、
+ * 利用側は住居表示データを引かず、地番データでも引けなくなる。
+ * そのため「flg=1、または住居表示データが有る」町字だけが rsdt: true になるようにここで補う。
+ * 住居表示データが無く flg=0 の町字は rsdt なし(地番扱い)のままになる。
+ * @param ma 町字(csv_ranges が設定済みであること)。破壊的に更新する
+ */
+export function applyRsdtFlagFromCsvRanges(ma: SingleMachiAza): void {
+  if (ma.csv_ranges?.['住居表示']) {
+    ma.rsdt = true;
   }
 }
 
@@ -117,6 +133,7 @@ async function main(argv: string[]) {
         if (ma) {
           ma.csv_ranges = ma.csv_ranges || {};
           ma.csv_ranges['住居表示'] = { start: headerRow.offset, length: headerRow.length };
+          applyRsdtFlagFromCsvRanges(ma);
         }
       }
 
